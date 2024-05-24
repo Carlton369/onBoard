@@ -1,44 +1,20 @@
-document.addEventListener("DOMContentLoaded", event => {
 
+document.addEventListener('DOMContentLoaded', event => {
     const app = firebase.app();
     const db = firebase.firestore();
+
+    console.log("help");
     //references the database
-    const docRef = db.collection('users').doc('user1');  // Replace 'users' and 'user1' with your collection and document names
+    //const docRef = db.collection('posts').doc('firstpost');  // Replace 'users' and 'user1' with your collection and document names
 
-    // Fetch the document
-    docRef.get().then((doc) => {
-        if (doc.exists) {
-            const userData = doc.data();
-            console.log(userData);  // This will log the data fetched from Firestore
+})
 
-            // Store the data in a const
-            const myData = userData;
-
-            // Print the data to the webpage
-            const outputElement = document.getElementById('output');
-            outputElement.innerHTML = JSON.stringify(myData);
-        } else {
-            console.log('No such document!');
-        }
-    }).catch((error) => {
-        console.error('Error fetching document: ', error);
-    });
-
+document.getElementById('myButton').addEventListener('click', function() {
+    document.getElementById('myParagraph').textContent = 'The text has been changed!';
+    console.log("sviebfxewfewifbw");
 });
-/*
-function updatePost(e){
-    const db = firebase.firestore();
-    const myPost = db.collection('posts').doc('firstpost');
-    myPost.update({title: e.target.value})
-}*/
-function getData(){
-    /*const myPost = db.collection('posts').doc('firstpost');
-    myPost.onSnapshot(doc => {
-        const data = doc.data();
-        document.write(data)
-    })*/
-    document.write(doc.data());
-}
+
+/*function for google auth
 function googleLogin(){
     const provider = new firebase.auth.GoogleAuthProvider();
     firebase.auth().signInWithPopup(provider)
@@ -50,4 +26,4 @@ function googleLogin(){
         })
         .catch(console.log)
 }
-
+*/
