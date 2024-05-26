@@ -7,11 +7,15 @@
     </section>
     <section v-if="user">
       <h3>Hello {{ user.displayName }}!</h3>
-      <p>User ID: {{ user.uid }}</p>
-      <button @click="logout">Sign Out</button>
+      <button @click="logout">Sign Out</button> <br>
+
+      <button> Event Listings </button>
+      <button> Contact Us! </button>
       <h4>NUS Board Games' Catalogue</h4>
+
       <input type="text" id="searchField" placeholder="Search by name">
       <button onclick="searchData()">Search</button>
+
       <ul id="searchResults"></ul>
 
       <ul v-if="user">
