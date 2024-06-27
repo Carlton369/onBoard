@@ -20,9 +20,12 @@
 
       <ul v-if="user">
         <li v-for="item in items" :key="item.id">
-          Name: {{ item.name }} <br>
-          Category: {{ item.category }} <br>
-          Complexity: {{ item.complexity }}
+          Name: {{ item.Name }} <br>
+          Complexity: {{ item.Complexity }} <br>
+          Genre: {{ item.Genre }} <br>
+          Players: {{ item.Players }} <br>
+          Duration: {{ item.Duration }} <br>
+          Mechanics: {{ item.Mechanics }} <br>
         </li>
       </ul>
     </section>
@@ -52,9 +55,12 @@ export default {
       const catalogueRef = collection(db, 'catalogue');
       this.unsubscribe = onSnapshot(catalogueRef, (querySnapshot) => {
         this.items = querySnapshot.docs.map(doc => ({
-          category: doc.data().category,
-          name: doc.data().name,
-          complexity: doc.data().complexity,
+          Genre: doc.data().Genre,
+          Name: doc.data().Name,
+          Complexity: doc.data().Complexity,
+          Mechanics: doc.data().Mechanics,
+          Duration: doc.data().Duration,
+          Players: doc.data().Players
         }));
       });
     }
@@ -71,4 +77,3 @@ export default {
   }
 };
 </script>
-
