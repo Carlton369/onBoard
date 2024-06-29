@@ -13,21 +13,33 @@
       <button> Contact Us! </button>
       <h4>NUS Board Games' Catalogue</h4>
 
-      <input type="text" id="searchField" placeholder="Search by name">
-      <button onclick="searchData()">Search</button>
+      
+      <input type="text" v-model="searchQuery" placeholder="Search">
+      
+      
+      <div v-if = "searchQuery === ''">
+        <div v-for="item in items"  :key="item.id">
+          <li class="collection-header"><h4>{{item.Name}}</h4></li>
+          <li class="collection-item">Genre: {{item.Genre}}</li>
+          <li class="collection-item">Players: {{item.Players}}</li>
+          <li class="collection-item">Mechanics: {{item.Mechanics}}</li>
+          <li class="collection-item">Complexity: {{item.Complexity}}</li>
+          <li class="collection-item">Duration: {{item.Duration}}</li>
+        </div>
+      </div>
 
-      <ul id="searchResults"></ul>
+      <div v-else>
+        <div> {{ searchQuery }} </div>
+        <div> {{ filteredItems }} </div>
+        <div  v-for="f_item in filteredItems" :key="f_item.id">   </div>
+          <li class="collection-header"><h4>{{f_item.Name}}</h4></li>
+          <li class="collection-item">Genre: {{f_item.Genre}}</li>
+          <li class="collection-item">Players: {{f_item.Players}}</li>
+          <li class="collection-item">Mechanics: {{f_item.Mechanics}}</li>
+          <li class="collection-item">Complexity: {{f_item.Complexity}}</li>
+          <li class="collection-item">Duration: {{f_item.Duration}}</li>
+      </div>
 
-      <ul v-if="user">
-        <li v-for="item in items" :key="item.id">
-          Name: {{ item.Name }} <br>
-          Complexity: {{ item.Complexity }} <br>
-          Genre: {{ item.Genre }} <br>
-          Players: {{ item.Players }} <br>
-          Duration: {{ item.Duration }} <br>
-          Mechanics: {{ item.Mechanics }} <br>
-        </li>
-      </ul>
     </section>
   </div>
 </template>
@@ -41,8 +53,9 @@ export default {
       user: null,
       items: [],
       unsubscribe: null,
+      searchQuery: ""
     };
-  },
+  }, 
   methods: {
     login() {
       const provider = new GoogleAuthProvider();
@@ -64,6 +77,12 @@ export default {
         }));
       });
     }
+  },
+  computed: {
+    filteredItems() {
+      const query = this.searchQuery.trim();
+      return this.items.filter(item => item.Name.includes(query));
+     }
   },
   created() {
     onAuthStateChanged(auth, (user) => {
