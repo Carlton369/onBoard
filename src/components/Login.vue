@@ -26,6 +26,7 @@
                 <li>Mechanics: {{ game.Mechanics }}</li>
                 <li>Complexity: {{ game.Complexity }}</li>
                 <li>Duration: {{ game.Duration }}</li>
+                <button @click="sendRentRequest(game.Name)">Rent this game!</button>
               </ul>
             </li>
           </ul>
@@ -50,6 +51,7 @@
 
 <script>
 import { auth, db, collection, getDocs, query, orderBy, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from '../firebase';
+import emailjs from 'emailjs-com';
 
 export default {
   data() {
@@ -80,6 +82,25 @@ export default {
         Duration: doc.data().Duration || 'Unknown Duration',
         Players: doc.data().Players || 'Unknown Players'
       }));
+    },
+    async sendRentRequest(gameName) {
+      const serviceID = 'service_18nnn8k'; // Replace with your EmailJS service ID
+      const templateID = 'template_5l5hyxi'; // Replace with your EmailJS template ID
+      const publicKey = 'aDsCutNu06-pYc4tV'; 
+
+      const templateParams = {
+        from_name: this.user.displayName,
+        game_name: gameName,
+      };
+
+      try {
+        const response = await emailjs.send(serviceID, templateID, templateParams, publicKey);
+        console.log('Email sent successfully:', response.status, response.text);
+        alert('Rental request sent successfully!');
+      } catch (error) {
+        console.error('Failed to send email:', error);
+        alert('Failed to send rental request.');
+      }
     }
   },
   computed: {
