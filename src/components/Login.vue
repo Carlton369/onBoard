@@ -1,98 +1,128 @@
 <template>
   <div>
-    <h1 > onBoard </h1>
+    <h1>onBoard</h1>
     <section v-if="!user">
-      <h2> Please log in to continue </h2>
+      <h2>Please log in to continue</h2>
       <button @click="login">Sign in with Google</button>
     </section>
     <section v-if="user">
       <h3>Hello {{ user.displayName }}!</h3>
       <button @click="logout">Sign Out</button> <br>
 
-      <button> Event Listings </button>
-      <button> Contact Us! </button>
+      <button>Event Listings</button>
+      <button>Contact Us!</button>
       <h4>NUS Board Games' Catalogue</h4>
 
-      
       <input type="text" v-model="searchQuery" placeholder="Search">
-      
-      
-      <div v-if = "searchQuery === ''">
-        <div v-for="item in items"  :key="item.id">
-          <li class="collection-header"><h4>{{item.Name}}</h4></li>
-          <li class="collection-item">Genre: {{item.Genre}}</li>
-          <li class="collection-item">Players: {{item.Players}}</li>
-          <li class="collection-item">Mechanics: {{item.Mechanics}}</li>
-          <li class="collection-item">Complexity: {{item.Complexity}}</li>
-          <li class="collection-item">Duration: {{item.Duration}}</li>
+
+      <div v-if="searchQuery === ''">
+        <div v-for="(games, genre) in organizedItems" :key="genre">
+          <h4 class="genre-header">{{ genre }}</h4>
+          <ul>
+            <li v-for="game in games" :key="game.id">
+              <h5 class="game-name">{{ game.Name }}</h5>
+              <ul class="game-details">
+                <li>Players: {{ game.Players }}</li>
+                <li>Mechanics: {{ game.Mechanics }}</li>
+                <li>Complexity: {{ game.Complexity }}</li>
+                <li>Duration: {{ game.Duration }}</li>
+              </ul>
+            </li>
+          </ul>
         </div>
       </div>
 
       <div v-else>
-        <div> {{ searchQuery }} </div>
-        <div> {{ filteredItems }} </div>
-        <div  v-for="f_item in filteredItems" :key="f_item.id">   </div>
-          <li class="collection-header"><h4>{{f_item.Name}}</h4></li>
-          <li class="collection-item">Genre: {{f_item.Genre}}</li>
-          <li class="collection-item">Players: {{f_item.Players}}</li>
-          <li class="collection-item">Mechanics: {{f_item.Mechanics}}</li>
-          <li class="collection-item">Complexity: {{f_item.Complexity}}</li>
-          <li class="collection-item">Duration: {{f_item.Duration}}</li>
+        <div v-for="game in filteredItems" :key="game.id">
+          <h5 class="game-name">{{ game.Name }}</h5>
+          <ul class="game-details">
+            <li>Players: {{ game.Players }}</li>
+            <li>Mechanics: {{ game.Mechanics }}</li>
+            <li>Complexity: {{ game.Complexity }}</li>
+            <li>Duration: {{ game.Duration }}</li>
+          </ul>
+        </div>
       </div>
-
     </section>
   </div>
 </template>
 
+
 <script>
-import { auth, db, collection, onSnapshot, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from '../firebase';
+import { auth, db, collection, getDocs, query, orderBy, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from '../firebase';
 
 export default {
   data() {
     return {
       user: null,
       items: [],
-      unsubscribe: null,
       searchQuery: ""
     };
-  }, 
+  },
   methods: {
-    login() {
+    async login() {
       const provider = new GoogleAuthProvider();
-      signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider);
     },
-    logout() {
-      signOut(auth);
+    async logout() {
+      await signOut(auth);
     },
-    subscribeToCatalogue() {
+    async fetchCatalogue() {
       const catalogueRef = collection(db, 'catalogue');
-      this.unsubscribe = onSnapshot(catalogueRef, (querySnapshot) => {
-        this.items = querySnapshot.docs.map(doc => ({
-          Genre: doc.data().Genre,
-          Name: doc.data().Name,
-          Complexity: doc.data().Complexity,
-          Mechanics: doc.data().Mechanics,
-          Duration: doc.data().Duration,
-          Players: doc.data().Players
-        }));
-      });
+      const q = query(catalogueRef, orderBy('Genre'));
+      const querySnapshot = await getDocs(q);
+      this.items = querySnapshot.docs.map(doc => ({
+        id: doc.id, // Ensure each item has a unique id
+        Genre: doc.data().Genre || 'Unknown Genre',
+        Name: doc.data().Name || 'Unknown Name',
+        Complexity: doc.data().Complexity || 'Unknown Complexity',
+        Mechanics: doc.data().Mechanics || 'Unknown Mechanics',
+        Duration: doc.data().Duration || 'Unknown Duration',
+        Players: doc.data().Players || 'Unknown Players'
+      }));
     }
   },
   computed: {
     filteredItems() {
       const query = this.searchQuery.trim();
       return this.items.filter(item => item.Name.includes(query));
-     }
+    },
+    organizedItems() {
+      const itemsByGenre = {};
+      this.items.forEach(item => {
+        if (!itemsByGenre[item.Genre]) {
+          itemsByGenre[item.Genre] = [];
+        }
+        itemsByGenre[item.Genre].push(item);
+      });
+      return itemsByGenre;
+    }
   },
   created() {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       this.user = user;
       if (user) {
-        this.subscribeToCatalogue();
-      } else if (this.unsubscribe) {
-        this.unsubscribe(); // Unsubscribe when the user signs out
+        await this.fetchCatalogue();
       }
     });
   }
 };
 </script>
+
+
+<style scoped>
+.genre-header {
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.game-name {
+  text-decoration: underline;
+  font-size: 1.25em; /* Adjust the font size as needed */
+}
+
+.game-details {
+  margin-left: 20px; /* Optional: to indent the details */
+  font-size: 1em; /* Adjust the font size as needed */
+}
+</style>
